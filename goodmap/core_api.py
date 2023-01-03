@@ -34,7 +34,6 @@ def core_pages(database, languages):
 
     @core_api.route("/languages")
     class Languages(Resource):
-        '''dupa'''
         def get(self):
             return jsonify(languages)
 
