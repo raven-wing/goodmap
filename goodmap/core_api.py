@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_babel import gettext
 from .core import get_queried_data
 from .formatter import prepare_pin
@@ -10,8 +10,8 @@ def make_tuple_translation(keys_to_translate):
 
 
 def core_pages(database, languages):
-    core_api_blueprint = Blueprint('api', __name__, url_prefix="/api")
-    core_api = Api(core_api_blueprint, doc='/doc', version='0.1')
+    core_api_blueprint = Blueprint('api', __name__)
+    core_api = Api(core_api_blueprint, doc='/docs', version='0.1')
 
     @core_api.route("/data")
     class Data(Resource):
@@ -43,5 +43,13 @@ def core_pages(database, languages):
             all_data = database.get_data()
             local_data = make_tuple_translation(all_data["categories"][category_type])
             return jsonify(local_data)
+
+    @core_api.route("/issue")
+    class Issues(Resource):
+        def put(self):
+            data = request.form["data"]
+            admin_email = current_app.config["ADMIN_EMAIL"]
+            current_app.sendmail(admin_email, "New issue", data)
+            return {"issue": data}
 
     return core_api_blueprint

@@ -14,10 +14,11 @@ def create_app(config_path):
     app = platzky.create_app_from_config(config)
     extend_app_db(app)
 
-    app.register_blueprint(core_pages(app.db, app.config["LANGUAGES"]))
     main = create_app_original(config)
-    app.register_blueprint(main)
+    app.register_blueprint(main, url_prefix="/")
 
+    core_pages_blueprint = core_pages(app.db, app.config["LANGUAGES"])
+    app.register_blueprint(core_pages_blueprint, url_prefix="/api")
     return app
 
 
