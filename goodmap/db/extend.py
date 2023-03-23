@@ -1,8 +1,7 @@
 import types
 
 from goodmap.db import google_json_db, local_json_db
-from goodmap.platzky.db.google_json_db import GoogleJsonDb
-from goodmap.platzky.db.json_file_db import JsonFile
+from platzky.db.json_file_db import JsonFile
 
 
 def extend_app_db(app):

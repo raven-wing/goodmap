@@ -1,6 +1,6 @@
 import json
 
-from goodmap.platzky.db import json_file_db
+from platzky.db import json_file_db
 
 
 def get_data(self):

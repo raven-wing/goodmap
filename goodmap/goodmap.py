@@ -1,3 +1,4 @@
+
 from os import path
 
 from flask import Blueprint, redirect, render_template
@@ -15,7 +16,7 @@ def create_app(config_path):
     app = platzky.create_app_from_config(config)
     extend_app_db(app)
 
-    app.register_blueprint(core_pages(app.db, app.config["LANGUAGES"]))  # pyright: ignore
+    app.register_blueprint(core_pages(app.db, app.config["LANGUAGES"]))
     main = create_app_original(config)
     app.register_blueprint(main)
 
