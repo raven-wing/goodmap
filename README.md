@@ -20,12 +20,12 @@ because `goodmap` contains a submodule.
 
 #TODO remove all submodule connected instructions after removing platzky submodule (see #157)
 
-#### 1. Use python 3.10
-If you have a different version of Python on your system, install python 3.10 alongside. For that, you can use [`pyenv`](https://github.com/pyenv/pyenv). Follow the [documentation](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation). Useful commands: `pyenv help <command>`, `pyenv install`, `pyenv shell`, `pyenv versions`.
+#### 1. Use python 3.11
+If you have a different version of Python on your system, install python 3.11 alongside. For that, you can use [`pyenv`](https://github.com/pyenv/pyenv). Follow the [documentation](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation). Useful commands: `pyenv help <command>`, `pyenv install`, `pyenv shell`, `pyenv versions`.
 
-#### 2. Install `poetry` in Python 3.10
+#### 2. Install `poetry` in Python 3.11
 `poetry` can create virtual environments associated with a project. \
-Make sure you are in the Python 3.10 environment and install:
+Make sure you are in the Python 3.11 environment and install:
 ```
 pip install poetry
 ```
