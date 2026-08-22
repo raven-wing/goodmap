@@ -291,6 +291,9 @@ def create_app_from_config(config: GoodmapConfig) -> platzky.Engine:
             goodmap_frontend_lib_url=config.goodmap_frontend_lib_url,
             plugin_manifest=plugin_manifest,
             marker_styles=marker_styles,
+            # The filters form is the left panel's only content, so a deployment
+            # without categories gets no left panel at all rather than an empty one.
+            has_filters=bool(categories),
         )
 
     @goodmap.route("/goodmap-admin")

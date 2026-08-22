@@ -339,3 +339,22 @@ describe('Distinguishes "and" categories with a visible hint, but keeps checkbox
         expect(badge).toHaveAttribute('tabIndex', '0');
     });
 });
+
+describe('Renders nothing when the deployment has no categories', () => {
+    beforeEach(() => {
+        httpService.getCategoriesData.mockResolvedValueOnce({ categories: [], defaultChecked: {} });
+    });
+
+    it('shows no form and no "Clear filters" button', async () => {
+        const { container } = render(
+            <AppProviders>
+                <FiltersForm />
+            </AppProviders>,
+        );
+
+        // The skeleton is up while the categories are in flight; wait for it to resolve.
+        await waitFor(() => expect(container.querySelector('form')).toBeNull());
+        expect(document.querySelector('#clear-filters-button')).toBeNull();
+        expect(container).toBeEmptyDOMElement();
+    });
+});

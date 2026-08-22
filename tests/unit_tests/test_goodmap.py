@@ -849,3 +849,42 @@ def test_plugin_blueprint_sets_cors_header():
 
         assert response.status_code == 200
         assert response.headers.get("Access-Control-Allow-Origin") == "*"
+
+
+def _map_page(categories: dict[str, Any]) -> str:
+    """Render /map for a deployment configured with the given categories."""
+    app = goodmap.create_app_from_config(
+        GoodmapConfig(
+            APP_NAME="test_app",
+            SECRET_KEY="test_secret",
+            USE_WWW=False,
+            BLOG_PREFIX="/blog",
+            DB=JsonDbConfig(
+                DATA={
+                    "site_content": {"pages": []},
+                    "location_obligatory_fields": [],
+                    "categories": categories,
+                },
+                TYPE="json",
+            ),
+        )
+    )
+    app.config["WTF_CSRF_ENABLED"] = False  # NOSONAR
+    response = app.test_client().get("/map")
+    assert response.status_code == 200
+    return response.data.decode("utf-8")
+
+
+def test_map_route_renders_the_filters_placeholder_when_there_are_categories():
+    assert 'id="filter-form"' in _map_page({"type_of_place": ["parcel_locker"]})
+
+
+def test_map_route_drops_the_whole_left_panel_when_there_are_no_categories():
+    """The filters form is the left panel's only content, so a deployment with nothing
+    to filter by gets no panel at all - not an empty one holding just a "Clear filters"
+    button. platzky's base template keys the panel (and its navbar toggle) off whether
+    the left_panel block renders anything, so the block has to come out empty."""
+    page = _map_page({})
+
+    assert 'id="filter-form"' not in page
+    assert 'id="left-panel"' not in page

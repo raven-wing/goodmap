@@ -438,6 +438,13 @@ const FiltersForm = () => {
         );
     }
 
+    // A deployment with no categories has nothing to filter by, so there is no form
+    // to show and nothing for "Clear filters" to clear. map.html already leaves the
+    // whole left panel out in that case; this covers the data being empty at runtime.
+    if (categoriesData.length === 0) {
+        return null;
+    }
+
     return (
         <form>
             {sections}

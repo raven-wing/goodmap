@@ -12,9 +12,11 @@
 {% endblock %}
 
 
-{% block left_panel %}
-<div id="filter-form"></div>
-{% endblock %}
+{# Rendered only when this deployment has categories to filter by: platzky's base
+   template decides whether to show the left panel (and its navbar toggle) from
+   whether this block renders anything, so it has to be empty - no stray whitespace -
+   when there are no filters. #}
+{% block left_panel %}{% if has_filters %}<div id="filter-form"></div>{% endif %}{% endblock %}
 
 {% block content %}
 

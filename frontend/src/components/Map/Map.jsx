@@ -14,14 +14,18 @@ import AppToaster from '../common/AppToaster';
  * fixed data (category definitions and the new-point schema) once for every consumer,
  * and with FiltersProvider, which owns the one thing that changes as the app runs.
  *
- * @returns {React.ReactElement|null} Portals for FiltersForm and MapComponent, or null if placeholders not found
+ * @returns {React.ReactElement|null} Portals for MapComponent and, when the left panel
+ *     is present, FiltersForm - or null if the map placeholder is not found
  */
 const MapWrap = () => {
     const mapPlaceholder = document.getElementById('map');
+    // Optional: a deployment with no categories to filter by renders no left panel at
+    // all (see map.html), so a missing placeholder is a valid configuration rather than
+    // an error - the map still has to come up.
     const filtersPlaceholder = document.getElementById('filter-form');
 
-    if (!filtersPlaceholder || !mapPlaceholder) {
-        console.error('Did not find any DOM elements to render the map or filters form');
+    if (!mapPlaceholder) {
+        console.error('Did not find a DOM element to render the map');
         return null;
     }
 
@@ -29,7 +33,7 @@ const MapWrap = () => {
         <DeploymentDataProvider>
             <FiltersProvider>
                 <AppToaster />
-                {createPortal(<FiltersForm />, filtersPlaceholder)}
+                {filtersPlaceholder && createPortal(<FiltersForm />, filtersPlaceholder)}
                 {createPortal(<MapComponent />, mapPlaceholder)}
             </FiltersProvider>
         </DeploymentDataProvider>
