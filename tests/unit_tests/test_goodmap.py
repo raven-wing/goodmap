@@ -13,10 +13,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 from platzky.config import AttachmentConfig
 from platzky.db.json_db import JsonDbConfig
+from pydantic import ValidationError
 
 from goodmap import goodmap
 from goodmap.config import GoodmapConfig
 from goodmap.feature_flags import EnableAdminPanel
+from goodmap.initial_view import DEFAULT_CENTER
 from goodmap.plugin import (
     CAPABILITY_BASES,
     MapOverlayPluginBase,
@@ -261,6 +263,77 @@ def test_map_route_includes_photo_constraints():
     assert photo["max_size_bytes"] == 5242880
     assert photo["allowed_mime_types"] == ["image/jpeg"]
     assert photo["allowed_extensions"] == ["jpeg", "jpg"]
+
+
+def test_map_route_initial_view():
+    """Where the map opens is a property of the deployment's data, not of the frontend
+    build, so it travels the same route marker_styles does: declared in the data source,
+    resolved at startup, handed to the page as window.INITIAL_VIEW."""
+    configured_config = GoodmapConfig(
+        APP_NAME="test_app",
+        SECRET_KEY="test_secret",
+        USE_WWW=False,
+        BLOG_PREFIX="/blog",
+        DB=JsonDbConfig(
+            DATA={
+                "site_content": {"pages": []},
+                "categories": {},
+                "initial_view": {"center": [53.37, 22.89], "zoom": 8, "max_zoom": 17},
+            },
+            TYPE="json",
+        ),
+    )
+    app = goodmap.create_app_from_config(configured_config)
+    app.config["WTF_CSRF_ENABLED"] = False  # NOSONAR
+
+    response = app.test_client().get("/map")
+    assert response.status_code == 200
+
+    match = re.search(r"window\.INITIAL_VIEW\s*=\s*(.*?);", response.data.decode("utf-8"))
+    assert match, "the page must carry an initial view"
+    assert json.loads(match.group(1)) == {
+        "center": [53.37, 22.89],
+        "zoom": 8,
+        "max_zoom": 17,
+    }
+
+
+def test_map_route_initial_view_defaults_when_the_data_source_declares_none():
+    """initial_view is optional. The page still gets a complete view, so the frontend
+    never has to decide what a missing field means."""
+    app = goodmap.create_app_from_config(_minimal_config())
+    app.config["WTF_CSRF_ENABLED"] = False  # NOSONAR
+
+    response = app.test_client().get("/map")
+    assert response.status_code == 200
+
+    match = re.search(r"window\.INITIAL_VIEW\s*=\s*(.*?);", response.data.decode("utf-8"))
+    assert match
+    view = json.loads(match.group(1))
+    assert set(view) == {"center", "zoom", "max_zoom"}
+    assert view["center"] == list(DEFAULT_CENTER)
+
+
+def test_an_unusable_initial_view_stops_the_app_from_starting():
+    """A view Leaflet would silently clamp is a deploy-time error, not a runtime
+    surprise - the same contract as an unknown icon provider."""
+    broken = GoodmapConfig(
+        APP_NAME="test_app",
+        SECRET_KEY="test_secret",
+        USE_WWW=False,
+        BLOG_PREFIX="/blog",
+        DB=JsonDbConfig(
+            DATA={
+                "site_content": {"pages": []},
+                "categories": {},
+                "initial_view": {"center": [953.0, 22.89]},
+            },
+            TYPE="json",
+        ),
+    )
+
+    with pytest.raises(ValidationError):
+        goodmap.create_app_from_config(broken)
 
 
 def _minimal_config() -> GoodmapConfig:

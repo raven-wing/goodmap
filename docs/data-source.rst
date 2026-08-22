@@ -17,6 +17,7 @@ and their schema, alongside platzky's ``site_content`` section:
        "categories": { ... },
        "visible_data": [ ... ],
        "meta_data": [ ... ],
+       "initial_view": { ... },
        "reported_issue_types": [ ... ],
        "suggestions": [ ... ],
        "reports": [ ... ]
@@ -319,6 +320,57 @@ A point whose ``icon_field``/``color_field`` value has no entry in ``icons``/``c
 simply renders without that part of the styling — this is not an error. A point with a
 ``remark`` (see above) always gets the asterisk badge regardless of whether its icon/color
 matched anything.
+
+.. _data-source-initial-view:
+
+Initial view
+------------
+
+``initial_view`` is where the map opens: the point it is centred on and how far in it is
+zoomed before the visitor touches anything. It lives here rather than in ``config.yml``
+because the right value is a property of your data — move the points to another country
+and the view has to follow.
+
+.. code-block:: json
+
+   {
+     "initial_view": {
+       "center": [53.37, 22.89],
+       "zoom": 8,
+       "max_zoom": 17
+     }
+   }
+
+``center``
+   ``[latitude, longitude]`` the map is centred on. Defaults to ``[51.917, 19.013]``, the
+   geographic centre of Poland.
+
+``zoom``
+   The zoom level the map opens at. Roughly: ``6`` a country, ``8`` a province, ``10`` a
+   metropolitan area, ``13`` a town, ``16`` a street. Defaults to ``7``.
+
+``max_zoom``
+   How far in a visitor may zoom. Defaults to ``19``; raise it only if your tile provider
+   actually serves those levels, since past its limit the map goes blank rather than
+   simply stopping.
+
+The whole section is optional, and so is every key in it — declaring only ``center`` keeps
+the default zooms. Omitting it entirely gives you the whole of Poland, which is the view
+GoodMap opened on before this was configurable.
+
+.. note::
+
+   A view GoodMap could not honour — a latitude past the pole, a ``zoom`` greater than
+   ``max_zoom`` — stops the app from starting, in the same way an unknown
+   ``icon_provider`` does. Leaflet would otherwise clamp the value silently and open
+   somewhere other than where you asked, which is considerably harder to diagnose than a
+   failed deploy.
+
+.. tip::
+
+   To find the values for a dataset, open the deployed map, pan and zoom until it looks
+   right, and read the numbers out of the URL bar of any OpenStreetMap page at the same
+   position — ``#map=<zoom>/<lat>/<lon>``.
 
 User submissions
 ----------------
