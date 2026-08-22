@@ -44,9 +44,11 @@ def test_create_app_from_config():
             patch("goodmap.goodmap.get_location_obligatory_fields", return_value=[]),
             patch("goodmap.goodmap.get_category_data") as mock_get_category_data,
             patch("goodmap.goodmap.get_marker_styles") as mock_get_marker_styles,
+            patch("goodmap.goodmap.get_initial_view") as mock_get_initial_view,
         ):
             mock_get_category_data.return_value.return_value = {"categories": {}}
             mock_get_marker_styles.return_value.return_value = {}
+            mock_get_initial_view.return_value.return_value = {}
             goodmap.create_app_from_config(config)
             mock_platzky_app_creation.assert_called_once_with(
                 config,

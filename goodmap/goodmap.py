@@ -22,10 +22,12 @@ from goodmap.data_models.location import create_location_model
 from goodmap.db import (
     extend_db_with_goodmap_queries,
     get_category_data,
+    get_initial_view,
     get_location_obligatory_fields,
     get_marker_styles,
 )
 from goodmap.feature_flags import EnableAdminPanel
+from goodmap.initial_view import resolve_initial_view
 from goodmap.marker_styles import resolve_marker_styles
 from goodmap.plugin import CAPABILITY_BASES, GoodmapPluginBase
 
@@ -184,6 +186,10 @@ def create_app_from_config(config: GoodmapConfig) -> platzky.Engine:
     raw_marker_styles = get_marker_styles(app.db)(app.db)
     marker_styles = resolve_marker_styles(raw_marker_styles)
 
+    # initial_view is optional the same way; resolve_initial_view fills in every field so
+    # the frontend never carries a default of its own.
+    initial_view = resolve_initial_view(get_initial_view(app.db)(app.db))
+
     location_model = create_location_model(location_obligatory_fields, categories)
     app.db = extend_db_with_goodmap_queries(app.db, location_model)
 
@@ -291,6 +297,7 @@ def create_app_from_config(config: GoodmapConfig) -> platzky.Engine:
             goodmap_frontend_lib_url=config.goodmap_frontend_lib_url,
             plugin_manifest=plugin_manifest,
             marker_styles=marker_styles,
+            initial_view=initial_view,
             # The filters form is the left panel's only content, so a deployment
             # without categories gets no left panel at all rather than an empty one.
             has_filters=bool(categories),
